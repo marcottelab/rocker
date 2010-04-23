@@ -3,3 +3,4 @@ mkmf.log
 *.so
 Makefile
 nbproject/
+pkg/
