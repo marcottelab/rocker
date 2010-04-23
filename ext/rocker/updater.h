@@ -53,6 +53,12 @@ public:
 
     void operator()(argument_type &T) {
         result R;
+
+        if (aucs.size() == 0) {
+            cerr << "No updates necessary." << endl;
+            return;
+        }
+
         query = make_known_correct_query().c_str();
 
         try {
