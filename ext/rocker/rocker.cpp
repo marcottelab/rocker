@@ -1,3 +1,26 @@
+/* Rocker gem C++ extension
+ * Part of crossval, in the Phenolog project
+ * (C) John O. Woods, The Marcotte Lab, 2010
+ *
+ * Requires boost, boost_filesystem, rice (Ruby in C++ Extension), and of course
+ * Ruby (1.8). Use at your own risk if you're not a lab member!
+ *
+ * To compile, run irb or script/console and do:
+ *  require 'extconf'
+ *
+ * Then leave the console, and type:
+ *  make
+ *
+ * You will then load the module from within the ruby shell using:
+ *  require 'rocker'
+ *
+ * Instantiate using:
+ *  Rocker.new("dbname=crossval_production username=youruser password=yourpass", 1, 167)
+ *
+ * (That connects to the specified PostgreSQL database and autoloads matrix 1
+ *  data. Updates will be made to experiment 167. This is just an example.)
+ */
+
 // g++ -I/usr/include -I/usr/local/include -L/usr/lib -L/usr/local/lib -lpqxx -lboost_filesystem rocker.cpp -o rocker
 #include <rice/Data_Type.hpp>
 #include <rice/Constructor.hpp>
@@ -42,6 +65,8 @@ void Init_DatabaseString() {
          .define_method("to_s", &database_string::operator());
 }
 
+// Uncomment to test -- probably unnecessary now that the Ruby extensions are
+// built.
 /*
 int main(int argc, char* argv[]) {
     database_string dbarg(DBNAME, USER, PASSWORD);
