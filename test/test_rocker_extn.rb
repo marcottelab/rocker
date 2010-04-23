@@ -10,9 +10,12 @@ end
 class TestRockerExtn < Test::Unit::TestCase
   def test_working
     t = Rocker.new(database_string, 1, 167)
+    x = t.mean_auc
+    puts "Mean AUC was #{x}"
   end
 
   def test_version_string
     puts Rocker::VERSION
   end
+
 end

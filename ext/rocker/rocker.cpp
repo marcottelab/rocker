@@ -53,7 +53,8 @@ void Init_rocker() {
              .define_method("calculate_statistic",
                             &Rocker::calculate_statistic,
                             (Arg("j"), Arg("threshold") = (double)(0.0)))
-             .define_method("read_candidates", &Rocker::read_candidates, (Arg("j")));
+             .define_method("read_candidates", &Rocker::read_candidates, (Arg("j")))
+             .define_method("mean_auc", &Rocker::mean_auc);
 
 }
 

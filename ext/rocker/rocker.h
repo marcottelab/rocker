@@ -46,7 +46,7 @@ class Rocker {
 public:
 
     // Connect to the database and create the read transaction
-    Rocker(string dbarg, uint m_id, uint e_id) : c(dbarg) {
+    Rocker(string dbarg, uint m_id, uint e_id) : c(dbarg), mean_auc_(0.0) {
         // Make sure the fetcher knows which matrix to restrict queries to.
         fetcher.matrix_id = m_id;
 
@@ -71,11 +71,18 @@ public:
     //
     ~Rocker() { }
 
+
+    // Return the mean AUC calculated -- requires that process_results was called,
+    // which happens in the constructor, so it's okay.
+    double mean_auc() { return mean_auc_; }
     
     // Go through the results directory
     map<uint,auc_info> process_results() {
         using namespace boost::filesystem;
         map<uint, auc_info> rocs;
+        
+        double temp_auc_accum = 0.0; // Keep track of AUCs so we can get a mean
+        size_t divide_by      = 1;
         
         // Look at all files in the directory
         for (basic_directory_iterator<path> jit(path(".")); jit != directory_iterator(); ++jit) {
@@ -83,10 +90,19 @@ public:
             if (path_to_uint(jit->path(), j)) {
                 // Read the file and calculate AUCs.
                 rocs[j] = calculate_statistic(j);
+                temp_auc_accum += rocs[j].auc;
+                ++divide_by;
                 
                 cout << "AUC: " << rocs[j].auc << endl;
             }
         }
+
+        // Calculate the mean AUC
+        if (divide_by > 0)
+            mean_auc_ = temp_auc_accum / (double)(divide_by);
+        else
+            mean_auc_ = 0;
+
         return rocs;
     }
 
@@ -203,6 +219,8 @@ protected:
     uint current_j;
     pqxx::connection c;
     pqxx::transaction<>* action;
+
+    double mean_auc_;
 
     Fetcher fetcher;
     Updater updater;
