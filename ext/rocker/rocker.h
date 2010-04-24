@@ -64,6 +64,9 @@ public:
 
         updater(*action);
 
+        // Make sure to actually save the results.
+        action->commit();
+
         delete action;
     }
 
@@ -74,7 +77,7 @@ public:
 
     // Return the mean AUC calculated -- requires that process_results was called,
     // which happens in the constructor, so it's okay.
-    double mean_auc() { return mean_auc_; }
+    double mean_auc() { return updater.mean_auc; }
     
     // Go through the results directory
     map<uint,auc_info> process_results() {
@@ -99,9 +102,9 @@ public:
 
         // Calculate the mean AUC
         if (divide_by > 0)
-            mean_auc_ = temp_auc_accum / (double)(divide_by);
+            updater.mean_auc = temp_auc_accum / (double)(divide_by);
         else
-            mean_auc_ = 0;
+            updater.mean_auc = 0;
 
         return rocs;
     }

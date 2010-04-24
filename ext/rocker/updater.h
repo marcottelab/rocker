@@ -49,7 +49,8 @@ public:
 
     uint experiment_id;
     map<uint,auc_info> aucs;
-    string query;
+    double mean_auc;
+    string insert_query, update_query;
 
     void operator()(argument_type &T) {
         result R;
@@ -59,21 +60,29 @@ public:
             return;
         }
 
-        query = make_known_correct_query().c_str();
+        insert_query = make_insertion_sql().c_str();
+        update_query = make_update_total_auc_sql().c_str();
 
         try {
-            //R = T.exec(query);
+            // Insert the AUCs
+            R = T.exec(insert_query);
             cout << "Query:" << endl;
-            cout << query << endl;
+            cout << insert_query << endl;
+
+            // Update the average AUC
+            R = T.exec(update_query);
+            cout << "Query:" << endl;
+            cout << update_query << endl;
         } catch (pqxx::sql_error e) {
-            cerr << "SQL error in Fetcher transactor." << endl;
+            cerr << "SQL error in Updater transactor." << endl;
             cerr << "Query: " << e.query() << endl;
             cerr << "Error: " << e.what()  << endl;
+            //FIXME: Needs to throw a Rails exception of some kind. (Or does it?)
         }
     }
 
 protected:
-    string make_known_correct_query() const {
+    string make_insertion_sql() const {
         ostringstream q;
         q << "INSERT INTO rocs " << AUC_COLUMNS << " VALUES \n";
         list<string> insertions;
@@ -82,5 +91,12 @@ protected:
         }
         q << join(insertions, ",\n") << ';';
         return q.str();
+    }
+
+    string make_update_total_auc_sql() const {
+        ostringstream q;
+        q << "UPDATE experiments SET total_auc = " << mean_auc
+          << " WHERE experiments.id = " << experiment_id << ';';
+
     }
 };

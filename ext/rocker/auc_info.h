@@ -12,7 +12,7 @@ using std::ostringstream;
 using std::string;
 using std::ostream;
 
-const string AUC_COLUMNS = "(experiment_id, column, auc, true_positives, false_positives, true_negatives, false_negatives)";
+const string AUC_COLUMNS = "(experiment_id, \"column\", auc, true_positives, false_positives, true_negatives, false_negatives)";
 
 class auc_info {
 public:

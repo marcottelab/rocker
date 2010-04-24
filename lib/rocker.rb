@@ -1,8 +1,8 @@
 $:.unshift(File.dirname(__FILE__)) unless
   $:.include?(File.dirname(__FILE__)) || $:.include?(File.expand_path(File.dirname(__FILE__)))
 
-require 'ext/rocker/rocker.so'
+require 'rocker.so'
 
 class Rocker
-  VERSION = '0.0.3'
+  VERSION = '0.0.8'
 end
