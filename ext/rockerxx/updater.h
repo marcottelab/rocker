@@ -45,12 +45,10 @@ typedef unsigned int  uint;
 
 class Updater : public transactor <> {
 public:
-    Updater() : transactor<>("Updater") {}
+    Updater(uint exp_id) : transactor<>("Updater"), experiment_id(exp_id) {}
 
-    uint experiment_id;
     map<uint,auc_info> aucs;
     double mean_auc;
-    string insert_query, update_query;
 
     void operator()(argument_type &T) {
         result R;
@@ -60,19 +58,16 @@ public:
             return;
         }
 
-        insert_query = make_insertion_sql().c_str();
-        update_query = make_update_total_auc_sql().c_str();
+        query = make_insertion_sql() + "\n" + make_update_total_auc_sql();
 
         try {
             // Insert the AUCs
-            R = T.exec(insert_query);
-            cout << "Query:" << endl;
-            cout << insert_query << endl;
-
             // Update the average AUC
-            R = T.exec(update_query);
+            R = T.exec(query);
             cout << "Query:" << endl;
-            cout << update_query << endl;
+            cout << query << endl;
+
+            T.commit();
         } catch (pqxx::sql_error e) {
             cerr << "SQL error in Updater transactor." << endl;
             cerr << "Query: " << e.query() << endl;
@@ -82,14 +77,17 @@ public:
     }
 
 protected:
+    uint experiment_id;
+    string query;
+
     string make_insertion_sql() const {
         ostringstream q;
-        q << "INSERT INTO rocs " << AUC_COLUMNS << " VALUES \n";
+        q << "INSERT INTO rocs " << AUC_COLUMNS << " VALUES ";
         list<string> insertions;
         for (map<uint,auc_info>::const_iterator i = aucs.begin(); i != aucs.end(); ++i) {
             insertions.push_back( i->second.entry(experiment_id, i->first) );
         }
-        q << join(insertions, ",\n") << ';';
+        q << join(insertions, ", ") << ';';
         return q.str();
     }
 
@@ -97,6 +95,6 @@ protected:
         ostringstream q;
         q << "UPDATE experiments SET total_auc = " << mean_auc
           << " WHERE experiments.id = " << experiment_id << ';';
-
+        return q.str();
     }
 };

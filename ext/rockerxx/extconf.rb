@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'mkmf-rice'
 
-dir_config("rocker")
+dir_config("rockerxx")
 dir_config("boost")
 
 have_library("stdc++")
@@ -12,4 +12,4 @@ if RUBY_VERSION =~ /1.9/ then
   $CPPFLAGS += " -DRUBY_19"
 end
 
-create_makefile('rocker')
+create_makefile('rockerxx')

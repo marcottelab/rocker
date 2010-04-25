@@ -14,7 +14,6 @@ $hoe = Hoe.spec 'rocker' do
   self.developer 'John Woods', 'john.woods@marcottelab.org'
   self.post_install_message = 'PostInstall.txt' # TODO remove if post-install message not required
   # self.extra_deps         = [['activesupport','>= 2.0.2']]
-
 end
 
 require 'newgem/tasks'

@@ -33,7 +33,7 @@ using std::cout;
 using std::endl;
 using namespace Rice;
 
-#include "rocker.h"
+#include "rockerxx.h"
 
 //#include "line_input_iterator.h"
 
@@ -41,15 +41,15 @@ typedef LineInputIterator<std::string> line_input_iterator;
 
 
 extern "C"
-void Init_rocker() {
+void Init_rockerxx() {
 
     // Expose Rocker class to Ruby
     //database_string dbarg(DBNAME, USER, PASSWORD);
-    Data_Type<Rocker> rb_cRocker =
-            define_class<Rocker>("Rocker")
+    Data_Type<Rocker> rb_cRockerxx =
+            define_class<Rocker>("Rockerxx")
              .define_constructor(Constructor<Rocker,std::string,uint,uint>())
              .define_method("process_results", &Rocker::process_results)
-             .define_method("fetch", &Rocker::fetch, (Arg("j")))
+             .define_method("fetch_column", &Rocker::fetch_column, (Arg("j")))
              .define_method("calculate_statistic",
                             &Rocker::calculate_statistic,
                             (Arg("j"), Arg("threshold") = (double)(0.0)))

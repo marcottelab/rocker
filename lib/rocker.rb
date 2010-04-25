@@ -1,8 +1,18 @@
 $:.unshift(File.dirname(__FILE__)) unless
   $:.include?(File.dirname(__FILE__)) || $:.include?(File.expand_path(File.dirname(__FILE__)))
 
-require 'rocker.so'
+# STDERR.puts("__FILE__=#{__FILE__}\ndirname=#{File.dirname(__FILE__)}")
+# $:.unshift(File.join(File.dirname(__FILE__),'..','ext','rocker'))
+# STDERR.puts($:)
 
-class Rocker
-  VERSION = '0.0.8'
+#require 'rockerxx'
+
+module Rocker
+  VERSION = '0.0.9'
+  DBARGS  = "dbname=crossval_development user=jwoods password=youwish1"
+
+  # Calculate AUCs in the current working directory
+  def self.calculate(matrix_id, experiment_id)
+    Rockerxx.new(DBARGS, matrix_id, experiment_id)
+  end
 end

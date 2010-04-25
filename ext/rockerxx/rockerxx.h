@@ -46,38 +46,39 @@ class Rocker {
 public:
 
     // Connect to the database and create the read transaction
-    Rocker(string dbarg, uint m_id, uint e_id) : c(dbarg), mean_auc_(0.0) {
+    Rocker(string dbarg, uint m_id, uint e_id)
+    : c(dbarg), known_(new map<uint, set<uint> >), fetch(m_id, known_), update(e_id)
+    {
         // Make sure the fetcher knows which matrix to restrict queries to.
-        fetcher.matrix_id = m_id;
+        // fetcher.matrix_id = m_id;
 
         // Set up a transaction
-        action = new pqxx::transaction<>(c, READ_TRANSACTION);
+        // action = new pqxx::transaction<>(c, READ_TRANSACTION);
 
-        fetcher(*action); // Perform the fetch.
+        c.perform(fetch);
+        // fetcher(*action); // Perform the fetch.
 
-        delete action;
+        // delete action;
+        update.aucs = process_results();
 
-        updater.experiment_id = e_id;
-        updater.aucs = process_results();
+        c.perform(update);
+        // action = new pqxx::transaction<>(c, WRITE_TRANSACTION);
 
-        action = new pqxx::transaction<>(c, WRITE_TRANSACTION);
+        // updater(*action);
 
-        updater(*action);
-
-        // Make sure to actually save the results.
-        action->commit();
-
-        delete action;
+        // delete action;
     }
 
 
     //
-    ~Rocker() { }
+    ~Rocker() {
+        delete known_;
+    }
 
 
     // Return the mean AUC calculated -- requires that process_results was called,
     // which happens in the constructor, so it's okay.
-    double mean_auc() { return updater.mean_auc; }
+    double mean_auc() { return update.mean_auc; }
     
     // Go through the results directory
     map<uint,auc_info> process_results() {
@@ -102,24 +103,32 @@ public:
 
         // Calculate the mean AUC
         if (divide_by > 0)
-            updater.mean_auc = temp_auc_accum / (double)(divide_by);
+            update.mean_auc = temp_auc_accum / (double)(divide_by);
         else
-            updater.mean_auc = 0;
+            update.mean_auc = 0;
 
         return rocs;
     }
 
 
     // Get genes with a specific phenotype association (phenotype id = j).
-    set<uint> fetch(uint j) const {
-        return fetcher.known_correct[j];
+    set<uint> fetch_column(uint j) const {
+        return (*known_)[j];
     }
 
 
     // For some phenotype j, determine AUC, fp, tp, fn, tn, etc.
     auc_info calculate_statistic(uint j, double threshold = 0.0) const {
-        set<uint> known_correct = fetch(j);
+        set<uint> known_correct = fetch_column(j);
         gene_score_list candidates = read_candidates(j);
+        auc_info result;
+
+        if (known_correct.size() == 0) {
+            result.auc = 0;
+            return result;
+        }
+
+
         //cerr << "Size of known_correct: " << known_correct.size() << endl;
 
         // Attempted transcription of code from Ruby into C++, after having taken
@@ -129,7 +138,7 @@ public:
         t.reserve(candidates.size()+1); t.push_back(0);
         vector<size_t> f = t;
 
-        auc_info result;
+
 
         for (gene_score_list::const_iterator i = candidates.begin(); i != candidates.end(); ++i) {
             if (known_correct.find(i->first) != known_correct.end()) {
@@ -216,15 +225,8 @@ public:
     
     
 protected:
-
-    uint matrix_id;
-    uint experiment_id;
-    uint current_j;
     pqxx::connection c;
-    pqxx::transaction<>* action;
-
-    double mean_auc_;
-
-    Fetcher fetcher;
-    Updater updater;
+    map<uint, set<uint> >* known_;
+    Fetcher fetch;
+    Updater update;
 };
