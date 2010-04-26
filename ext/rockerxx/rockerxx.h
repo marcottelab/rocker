@@ -45,7 +45,11 @@ bool path_to_uint(const boost::filesystem::path& p, uint& n) {
 class Rocker {
 public:
 
-    // Connect to the database and create the read transaction
+    // Connect to the database and create the read transaction.
+    // This also creates the place where query results from the fetch operation will
+    // be stored. It won't work if the fetcher creates those results itself, since
+    // perform() apparently creates a copy and therefore doesn't write to the
+    // original's var.
     Rocker(string dbarg, uint m_id, uint e_id)
     : c(dbarg), known_(new map<uint, set<uint> >), fetch(m_id, known_), update(e_id)
     {

@@ -2,13 +2,14 @@ $:.unshift(File.dirname(__FILE__)) unless
   $:.include?(File.dirname(__FILE__)) || $:.include?(File.expand_path(File.dirname(__FILE__)))
 
 # STDERR.puts("__FILE__=#{__FILE__}\ndirname=#{File.dirname(__FILE__)}")
-# $:.unshift(File.join(File.dirname(__FILE__),'..','ext','rocker'))
+# $:.unshift(File.join(File.dirname(__FILE__),'..','ext','rockerxx'))
 # STDERR.puts($:)
 
-#require 'rockerxx'
+require 'facets'
+require_local '../ext/rockerxx/rockerxx.so'
 
 module Rocker
-  VERSION = '0.0.9'
+  VERSION = '0.0.10'
   DBARGS  = "dbname=crossval_development user=jwoods password=youwish1"
 
   # Calculate AUCs in the current working directory
