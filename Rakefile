@@ -1,24 +1,50 @@
+# File: Rakefile
+
 require 'rubygems'
-gem 'hoe', '>= 2.1.0'
-require 'hoe'
-require 'fileutils'
-require './lib/rocker'
+require 'rake/extensiontask'
+require 'rake/testtask'
 
-Hoe.plugin :newgem
-# Hoe.plugin :website
-# Hoe.plugin :cucumberfeatures
+PKG = "rocker"
+PKG_VERSION = [0,0,11]
+AUTHOR = "John O. Woods, Marcotte Lab"
+EMAIL = "john.woods@marcottelab.org"
+HOMEPAGE = "http://github.com/MarcotteLabGit/fastknn"
 
-# Generate all the Rake tasks
-# Run 'rake -T' to see list of generated tasks (from gem root directory)
-$hoe = Hoe.spec 'rocker' do
-  self.developer 'John Woods', 'john.woods@marcottelab.org'
-  self.post_install_message = 'PostInstall.txt' # TODO remove if post-install message not required
-  # self.extra_deps         = [['activesupport','>= 2.0.2']]
-  self.extra_deps = [['facets','>=2.8.3']]
+spec = Gem::Specification.new do |s|
+  s.platform = Gem::Platform::RUBY
+  s.extensions = FileList["ext/**/extconf.rb"]
+  s.summary = "Faster AUC calculation"
+  s.name = PKG
+  s.author = AUTHOR
+  s.email = EMAIL
+  s.homepage = HOMEPAGE
+  s.version = PKG_VERSION.join('.')
+  s.requirements << 'libpqxx3'
+  s.requirements << 'rice-1.3.2'
+  s.require_path = 'lib'
+  # s.autorequire = 'rake'
+  s.files = FileList['Rakefile', 'lib/rocker.rb', 'test/*.rb', 'ext/**/*.cpp', 'ext/**/*.h'].to_a
+  s.description = <<EOF
+Rocker is a C++-implemented Ruby module for AUC calculations.
+It's designed to work with crossval's database, which is probably
+not yet public; but it's fairly easily modifiable.
+EOF
+end
+spec.add_development_dependency('test_benchmark')
+
+Rake::GemPackageTask.new(spec) do |pkg|
+  pkg.need_tar = true
 end
 
-require 'newgem/tasks'
-Dir['tasks/**/*.rake'].each { |t| load t }
+Rake::ExtensionTask.new('rockerxx')
+
+#namespace :test do
+#  Rake::TestTask.new(:phenomatrix) do |t|
+#    t.test_files = FileList['test/test_phenomatrix_extn.rb']
+#    t.warning = true
+#    t.verbose = true
+#  end
+#end
 
 # TODO - want other tests/tasks run by default? Add them to the list
 # remove_task :default

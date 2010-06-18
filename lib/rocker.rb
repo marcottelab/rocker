@@ -5,11 +5,10 @@ $:.unshift(File.dirname(__FILE__)) unless
 # $:.unshift(File.join(File.dirname(__FILE__),'..','ext','rockerxx'))
 # STDERR.puts($:)
 
-require 'facets'
-require_local '../ext/rockerxx/rockerxx.so'
+require "rockerxx.so"
 
 module Rocker
-  VERSION = '0.0.10'
+  VERSION = '0.0.11'
   DBARGS  = "dbname=crossval_development user=jwoods password=youwish1"
 
   # Calculate AUCs in the current working directory
