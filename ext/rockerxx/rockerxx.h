@@ -53,30 +53,21 @@ public:
     Rocker(string dbarg, uint m_id, uint e_id)
     : c(dbarg), known_(new map<uint, set<uint> >), fetch(m_id, known_), update(e_id)
     {
-        // Make sure the fetcher knows which matrix to restrict queries to.
-        // fetcher.matrix_id = m_id;
-
-        // Set up a transaction
-        // action = new pqxx::transaction<>(c, READ_TRANSACTION);
-
         c.perform(fetch);
-        // fetcher(*action); // Perform the fetch.
-
-        // delete action;
-        update.aucs = process_results();
-
-        c.perform(update);
-        // action = new pqxx::transaction<>(c, WRITE_TRANSACTION);
-
-        // updater(*action);
-
-        // delete action;
     }
 
 
-    //
+    // Delete data that has been loaded.
     ~Rocker() {
         delete known_;
+    }
+
+
+    // Acquire results, compare them to what's in the database, and add the data to the DB.
+    // The argument allows us to choose a value at which to set the T/F cutoff.
+    void acquire_results(float threshold) {
+        update.aucs = process_results(threshold);
+        c.perform(update);
     }
 
 
@@ -85,7 +76,7 @@ public:
     double mean_auc() { return update.mean_auc; }
     
     // Go through the results directory
-    map<uint,auc_info> process_results() {
+    map<uint,auc_info> process_results(float threshold) {
         using namespace boost::filesystem;
         map<uint, auc_info> rocs;
         
@@ -97,7 +88,7 @@ public:
             uint j = 0;
             if (path_to_uint(jit->path(), j)) {
                 // Read the file and calculate AUCs.
-                rocs[j] = calculate_statistic(j);
+                rocs[j] = calculate_statistic(j, threshold);
                 temp_auc_accum += rocs[j].auc;
                 ++divide_by;
                 
@@ -122,10 +113,11 @@ public:
 
 
     // For some phenotype j, determine AUC, fp, tp, fn, tn, etc.
-    auc_info calculate_statistic(uint j, double threshold = 0.0) const {
+    auc_info calculate_statistic(uint j, float threshold) const {
         set<uint> known_correct = fetch_column(j);
         gene_score_list candidates = read_candidates(j);
         auc_info result;
+        result.threshold = threshold;
 
         if (known_correct.size() == 0) {
             result.auc = 0;
@@ -150,16 +142,16 @@ public:
                 f.push_back( *(f.rbegin()) );
 
                 // Update true positives / false negatives
-                if (i->second > threshold) result.tp++;
-                else                       result.fn++;
+                if (i->second > result.threshold) result.tp++;
+                else                              result.fn++;
                 
             } else {
                 t.push_back( *(t.rbegin()) );
                 f.push_back( *(f.rbegin()) + 1 );
 
                 // Update false positives / true negatives
-                if (i->second > threshold) result.fp++;
-                else                       result.tn++;
+                if (i->second > result.threshold) result.fp++;
+                else                              result.tn++;
             }
 
         }
@@ -234,3 +226,4 @@ protected:
     Fetcher fetch;
     Updater update;
 };
+

@@ -8,11 +8,11 @@ $:.unshift(File.dirname(__FILE__)) unless
 require "rockerxx.so"
 
 module Rocker
-  VERSION = '0.0.11'
+  VERSION = '0.0.12'
   DBARGS  = "dbname=crossval_development user=jwoods password=youwish1"
 
   # Calculate AUCs in the current working directory
-  def self.calculate(matrix_id, experiment_id)
+  def self.create(matrix_id, experiment_id)
     Rockerxx.new(DBARGS, matrix_id, experiment_id)
   end
 end

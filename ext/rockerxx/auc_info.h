@@ -12,7 +12,7 @@ using std::ostringstream;
 using std::string;
 using std::ostream;
 
-const string AUC_COLUMNS = "(experiment_id, \"column\", auc, true_positives, false_positives, true_negatives, false_negatives)";
+const string AUC_COLUMNS = "(experiment_id, \"column\", auc, true_positives, false_positives, true_negatives, false_negatives, threshold)";
 
 class auc_info {
 public:
@@ -21,17 +21,18 @@ public:
     uint fp;
     uint tn;
     uint fn;
+    float threshold;
 
     // Constructor
-    auc_info(double area_under_curve = 0, uint true_positives = 0, uint false_positives = 0, uint true_negatives = 0, uint false_negatives = 0)
-    : auc(area_under_curve), tp(true_positives), fp(false_positives), tn(true_negatives), fn(false_negatives) { }
+    auc_info(double area_under_curve = 0, uint true_positives = 0, uint false_positives = 0, uint true_negatives = 0, uint false_negatives = 0, float threshold_ = 0.0)
+    : auc(area_under_curve), tp(true_positives), fp(false_positives), tn(true_negatives), fn(false_negatives), threshold(threshold_) { }
 
     ~auc_info() { }
 
     // Convert to a portion of a SQL insertion (string)
     string to_s() const {
         ostringstream s;
-        s << auc << ", " << tp << ", " << fp << ", " << tn << ", " << fn;
+        s << auc << ", " << tp << ", " << fp << ", " << tn << ", " << fn << ", " << threshold;
         return s.str();
     }
 
@@ -40,6 +41,8 @@ public:
         s << '(' << experiment_id << ", " << j << ", " << to_s() << ')';
         return s.str();
     }
+
+    
 };
 
 // Probably not necessary.

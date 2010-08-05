@@ -23,6 +23,7 @@
 
 // g++ -I/usr/include -I/usr/local/include -L/usr/lib -L/usr/local/lib -lpqxx -lboost_filesystem rocker.cpp -o rocker
 #include <rice/Data_Type.hpp>
+#include <rice/Hash.hpp>
 #include <rice/Constructor.hpp>
 
 #include <iostream>
@@ -40,6 +41,36 @@ using namespace Rice;
 typedef LineInputIterator<std::string> line_input_iterator;
 
 
+// CONVERSION FUNCTIONS: Allow non-basic types in C++ to be converted into Ruby
+// objects for users to peruse.
+
+template <>
+Object to_ruby<auc_info>(auc_info const & d) {
+    Hash h;
+    h[Symbol("auc")] = to_ruby<double>(d.auc);
+    h[Symbol("true_positives")] = to_ruby<uint>(d.tp);
+    h[Symbol("false_positives")] = to_ruby<uint>(d.fp);
+    h[Symbol("true_negatives")] = to_ruby<uint>(d.tn);
+    h[Symbol("true_positives")] = to_ruby<uint>(d.tp);
+    h[Symbol("threshold")] = to_ruby<float>(d.threshold);
+
+    return h;
+}
+
+
+template <>
+Object to_ruby< map<uint,auc_info> >(map<uint,auc_info> const & d) {
+    Hash h;
+    for (map<uint,auc_info>::const_iterator it = d.begin(); it != d.end(); ++it) {
+        h[to_ruby<uint>(it->first)] = to_ruby<auc_info>(it->second);
+    }
+    return h;
+}
+
+
+
+// INIT FUNCTIONS: For exposing C++ objects directly to Ruby.
+
 extern "C"
 void Init_rockerxx() {
 
@@ -49,6 +80,7 @@ void Init_rockerxx() {
             define_class<Rocker>("Rockerxx")
              .define_constructor(Constructor<Rocker,std::string,uint,uint>())
              .define_method("process_results", &Rocker::process_results)
+             .define_method("acquire_results", &Rocker::acquire_results)
              .define_method("fetch_column", &Rocker::fetch_column, (Arg("j")))
              .define_method("calculate_statistic",
                             &Rocker::calculate_statistic,
