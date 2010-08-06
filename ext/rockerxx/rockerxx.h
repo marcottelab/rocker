@@ -1,3 +1,6 @@
+#ifndef ROCKERXX_H_
+# define ROCKERXX_H_
+
 #include "constants.h"
 #include "line_input_iterator.h"
 #include "fetcher.h"
@@ -114,27 +117,21 @@ public:
 
     // For some phenotype j, determine AUC, fp, tp, fn, tn, etc.
     auc_info calculate_statistic(uint j, float threshold) const {
-        set<uint> known_correct = fetch_column(j);
-        gene_score_list candidates = read_candidates(j);
-        auc_info result;
-        result.threshold = threshold;
+        set<uint> known_correct     = fetch_column(j);
+        gene_score_list candidates  = read_candidates(j);
+        auc_info                      result(threshold);
 
         if (known_correct.size() == 0) {
             result.auc = 0;
             return result;
         }
 
-
-        //cerr << "Size of known_correct: " << known_correct.size() << endl;
-
         // Attempted transcription of code from Ruby into C++, after having taken
         // it from Python the first time.
         // No guarantees!
-        vector<size_t> t;
+        vector<size_t> t,f; // trues and falses
         t.reserve(candidates.size()+1); t.push_back(0);
-        vector<size_t> f = t;
-
-
+        f.reserve(candidates.size()+1); f.push_back(0);
 
         for (gene_score_list::const_iterator i = candidates.begin(); i != candidates.end(); ++i) {
             if (known_correct.find(i->first) != known_correct.end()) {
@@ -227,3 +224,4 @@ protected:
     Updater update;
 };
 
+#endif

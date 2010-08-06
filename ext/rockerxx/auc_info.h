@@ -24,7 +24,7 @@ public:
     float threshold;
 
     // Constructor
-    auc_info(double area_under_curve = 0, uint true_positives = 0, uint false_positives = 0, uint true_negatives = 0, uint false_negatives = 0, float threshold_ = 0.0)
+    auc_info(float threshold_ = 0.0, double area_under_curve = 0, uint true_positives = 0, uint false_positives = 0, uint true_negatives = 0, uint false_negatives = 0)
     : auc(area_under_curve), tp(true_positives), fp(false_positives), tn(true_negatives), fn(false_negatives), threshold(threshold_) { }
 
     ~auc_info() { }
