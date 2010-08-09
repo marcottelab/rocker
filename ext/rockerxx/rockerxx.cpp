@@ -23,6 +23,7 @@
 
 // g++ -I/usr/include -I/usr/local/include -L/usr/lib -L/usr/local/lib -lpqxx -lboost_filesystem rocker.cpp -o rocker
 #include <rice/Data_Type.hpp>
+#include <rice/Array.hpp>
 #include <rice/Hash.hpp>
 #include <rice/Constructor.hpp>
 
@@ -45,14 +46,50 @@ typedef LineInputIterator<std::string> line_input_iterator;
 // objects for users to peruse.
 
 template <>
+Object to_ruby<rate_vec >(rate_vec const & d) {
+    Array ary;
+    for (rate_vec::const_iterator it = d.begin(); it != d.end(); ++it) {
+        ary.push(*it);
+    }
+    return ary;
+}
+
+
+template <>
+Object to_ruby<size_vec >(size_vec const & d) {
+    Array ary;
+    for (size_vec::const_iterator it = d.begin(); it != d.end(); ++it) {
+        ary.push(*it);
+    }
+    return ary;
+}
+
+template <>
 Object to_ruby<auc_info>(auc_info const & d) {
     Hash h;
     h[Symbol("auc")] = to_ruby<double>(d.auc);
     h[Symbol("true_positives")] = to_ruby<uint>(d.tp);
     h[Symbol("false_positives")] = to_ruby<uint>(d.fp);
     h[Symbol("true_negatives")] = to_ruby<uint>(d.tn);
-    h[Symbol("true_positives")] = to_ruby<uint>(d.tp);
+    h[Symbol("false_negatives")] = to_ruby<uint>(d.fn);
     h[Symbol("threshold")] = to_ruby<float>(d.threshold);
+
+    return h;
+}
+
+template <>
+Object to_ruby<confusion_matrix>(confusion_matrix const & d) {
+    Hash h;
+//    h[Symbol("tp_axis")] = to_ruby<size_vec >(d.tp_axis());
+//    h[Symbol("p_axis")] = to_ruby<size_vec >(d.p_axis());
+    //h[Symbol("n_axis")] = to_ruby<size_vec >(d.n_axis());
+    //h[Symbol("tn_axis")] = to_ruby<size_vec >(d.tn_axis());
+    h[Symbol("tpr_axis")] = to_ruby<rate_vec >(d.tpr_axis());
+    h[Symbol("fpr_axis")] = to_ruby<rate_vec >(d.fpr_axis());
+    pair<rate_vec, float> pre_and_pr_area = d.precision_axis_and_area();
+    h[Symbol("precision_axis")] = to_ruby<rate_vec >(pre_and_pr_area.first);
+    h[Symbol("roc_area")]  = to_ruby<float>(d.roc_area());
+    h[Symbol("pr_area")]   = to_ruby<float>(pre_and_pr_area.second);
 
     return h;
 }
@@ -82,6 +119,7 @@ void Init_rockerxx() {
              .define_method("process_results", &Rocker::process_results)
              .define_method("acquire_results", &Rocker::acquire_results)
              .define_method("fetch_column", &Rocker::fetch_column, (Arg("j")))
+             .define_method("calculate_plots", &Rocker::calculate_plots)
              .define_method("calculate_statistic",
                             &Rocker::calculate_statistic,
                             (Arg("j"), Arg("threshold") = (double)(0.0)))

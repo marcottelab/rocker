@@ -16,7 +16,8 @@ const string AUC_COLUMNS = "(experiment_id, \"column\", auc, true_positives, fal
 
 class auc_info {
 public:
-    double auc;
+    float auc;
+    float auprc;
     uint tp;
     uint fp;
     uint tn;
@@ -24,8 +25,8 @@ public:
     float threshold;
 
     // Constructor
-    auc_info(float threshold_ = 0.0, double area_under_curve = 0, uint true_positives = 0, uint false_positives = 0, uint true_negatives = 0, uint false_negatives = 0)
-    : auc(area_under_curve), tp(true_positives), fp(false_positives), tn(true_negatives), fn(false_negatives), threshold(threshold_) { }
+    auc_info(float threshold_ = 0.0, float area_under_curve = 0, float area_under_pr_curve = 0, uint true_positives = 0, uint false_positives = 0, uint true_negatives = 0, uint false_negatives = 0)
+    : auc(area_under_curve), auprc(area_under_pr_curve), tp(true_positives), fp(false_positives), tn(true_negatives), fn(false_negatives), threshold(threshold_) { }
 
     ~auc_info() { }
 

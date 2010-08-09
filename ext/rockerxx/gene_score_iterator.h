@@ -11,7 +11,7 @@ public:
     typedef std::basic_istream<char_type, traits_type> istream_type;
 
     GeneScoreIterator() : is(NULL) { }
-    GeneScoreIterator(istream_type& is): is(&is) {
+    GeneScoreIterator(istream_type& is) : is(&is) {
         ++*this; // Priming read.
     }
 

@@ -2,15 +2,17 @@
 # define ROCKERXX_H_
 
 #include "constants.h"
-#include "line_input_iterator.h"
+#include "gene_score_iterator.h"
 #include "fetcher.h"
 #include "updater.h"
-#include "auc_info.h"
+#include "confusion_matrix.h"
 
 #include <string>
 #include <utility>
 #include <sstream>
 #include <list>
+#include <vector>
+#include <set>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/lexical_cast.hpp>
@@ -19,11 +21,16 @@ using boost::filesystem::exists;
 using boost::filesystem::ifstream;
 using std::string;
 using std::list;
+using std::vector;
 using std::ostringstream;
 
 // typedef unordered_map<uint, double> gene_score_map;
-typedef list<std::pair<uint,double> > gene_score_list;
+typedef std::pair<uint, double>                gene_score;
+typedef std::pair<std::set<uint>,double>       genes_score;
+typedef list<genes_score >                     genes_score_list;
 typedef GeneScoreIterator<unsigned int,double> gene_score_iterator;
+typedef vector<size_t>                         size_vec;
+
 
 
 string path_to_s(const boost::filesystem::path& p) {
@@ -115,69 +122,36 @@ public:
     }
 
 
+    // For some phenotype j, determine:
+    // * Sensitivity/recall/TPR  (TP/(TP+FN))
+    // * Fallout/FPR (FP/(FP+TN))
+    // * precision (TP/(TP+FP))
+    confusion_matrix calculate_plots(uint j, float threshold) const {
+        using std::pair;
+
+        set<uint> known_correct                  = fetch_column(j);
+        pair<genes_score_list,size_t> candidates = read_candidates(j); // bins (first) and total number of genes (second)
+        confusion_matrix cm(candidates.first.size(), candidates.second, known_correct.size());
+
+        for (genes_score_list::const_iterator i = candidates.first.begin(); i != candidates.first.end(); ++i) {
+
+            // Get the number of genes in the current class that are "correct" and aren't "correct"
+            std::list<uint> i_t; // correct
+
+            std::set_intersection(known_correct.begin(), known_correct.end(),
+                                  i->first.begin(), i->first.end(),
+                                  std::insert_iterator<std::list<uint> >(i_t,i_t.begin()));
+
+            // Add to the confusion matrix.
+            cm.push_back(i->second, i->first.size(), i_t.size());
+        }
+        
+        return cm;
+    }
+
     // For some phenotype j, determine AUC, fp, tp, fn, tn, etc.
     auc_info calculate_statistic(uint j, float threshold) const {
-        set<uint> known_correct     = fetch_column(j);
-        gene_score_list candidates  = read_candidates(j);
-        auc_info                      result(threshold);
-
-        if (known_correct.size() == 0) {
-            result.auc = 0;
-            return result;
-        }
-
-        // Attempted transcription of code from Ruby into C++, after having taken
-        // it from Python the first time.
-        // No guarantees!
-        vector<size_t> t,f; // trues and falses
-        t.reserve(candidates.size()+1); t.push_back(0);
-        f.reserve(candidates.size()+1); f.push_back(0);
-
-        for (gene_score_list::const_iterator i = candidates.begin(); i != candidates.end(); ++i) {
-            if (known_correct.find(i->first) != known_correct.end()) {
-                t.push_back( *(t.rbegin()) + 1 );
-                f.push_back( *(f.rbegin()) );
-
-                // Update true positives / false negatives
-                if (i->second > result.threshold) result.tp++;
-                else                              result.fn++;
-                
-            } else {
-                t.push_back( *(t.rbegin()) );
-                f.push_back( *(f.rbegin()) + 1 );
-
-                // Update false positives / true negatives
-                if (i->second > result.threshold) result.fp++;
-                else                              result.tn++;
-            }
-
-        }
-
-        vector<double> tpl; tpl.reserve(candidates.size()+1);
-        // vector<double> fpl = tpl;
-        size_t last_f = 0;
-        for (size_t i = 0; i < t.size(); ++i) {
-            if (f[i] > last_f) {
-                tpl.push_back(t[i]);
-                // fpl.push_back(f[i]);
-                last_f = f[i];
-            }
-        }
-
-        size_t last_t = *(t.rbegin());
-        double sum = 0.0;
-        // Divide each by the last item in that array
-        // Also keep track of the sum for calculating the final AUC value
-        for (size_t i = 0; i < tpl.size(); ++i) {
-            // tpl[i] /= (double)(last_t);
-            // fpl[i] /= (double)(last_f);
-            sum += tpl[i];
-        }
-
-        result.auc = (sum / (double)(last_t)) / (double)(tpl.size());
-        if (tpl.size() == 0) result.auc = 0; // prevent NaN return.
-
-        return result;
+        return calculate_plots(j, threshold).summary(threshold);
     }
 
 
@@ -185,7 +159,8 @@ public:
     // First two lines are comment.
     // Assumes the files are pre-sorted by sortall.pl (by column 2 descending).
     // column 1 is the gene, column 2 is the prediction score (higher is better).
-    gene_score_list read_candidates(uint j) const {
+    // Returns a list of binned genes (by score) and the total number of genes.
+    std::pair<genes_score_list,size_t> read_candidates(uint j) const {
         ostringstream fn; fn << j;
         boost::filesystem::path filepath(fn.str());
         //cerr << "Opening file: '" << filepath << "'" << endl;
@@ -195,7 +170,7 @@ public:
             throw;
         }
 
-        gene_score_list res;
+        genes_score_list res;
 
         // Open a filestream
         ifstream fin(filepath);
@@ -205,15 +180,35 @@ public:
         fin.ignore(500, '\n');
         //cout << "Next character is: '" << fin.peek() << "'" << endl;
 
+        genes_score genes_s;  // store set of genes and a score here.
+        size_t num_genes = 0; // keep track of total number of genes in file.
+
+        gene_score_iterator gsit(fin); // priming read
+
+        genes_s.second = gsit->second;
+        genes_s.first.insert(gsit->first);
+        
         // Iterate through the gene-score pairs in the file
-        for (gene_score_iterator gsit(fin); gsit != gene_score_iterator(); ++gsit) {
-            //cerr << "Adding " << gsit->first << '\t' << gsit->second << endl;
-            res.push_back(*gsit);
+        while (++gsit != gene_score_iterator()) {
+            gene_score gs(*gsit);
+
+            // If we come upon a score change, insert the previous row/rows, and
+            // start a new collection.
+            if (genes_s.second != gs.second) {
+                res.push_back(genes_s);
+                genes_s.second = gs.second;
+                genes_s.first.clear();
+            }
+            genes_s.first.insert(gs.first);
+
+            ++num_genes;
         }
+        // Insert anything that remains once the file is at its end.
+        res.push_back(genes_s);
 
         fin.close();
 
-        return res;
+        return make_pair(res,num_genes+1);
     }
     
     
