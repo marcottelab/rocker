@@ -104,12 +104,9 @@ public:
     // Summary is what gets put into the database.
     auc_info summary(float thresh) const {
         size_t idx = 0;
-        if (thresh == 0.0 || thresh == 1.0) idx = threshold.find(thresh)->second;
-        else {
-            // TODO: Find a more efficient data structure for this!
-            for (map<float,size_t>::const_iterator it = threshold.begin(); it != threshold.end(); ++it)
-                if (it->first >= thresh) idx = it->second;
-        }
+        // TODO: Find a more efficient data structure for this!
+        for (map<float,size_t>::const_iterator it = threshold.begin(); it != threshold.end(); ++it)
+            if (it->first > thresh) idx = it->second;
 
         // Only calculate this so we can get the precision.
         pair<rate_vec,float> tmp(precision_axis_and_area());

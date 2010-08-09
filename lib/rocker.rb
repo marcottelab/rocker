@@ -6,7 +6,6 @@ $:.unshift(File.dirname(__FILE__)) unless
 # STDERR.puts($:)
 
 require "rockerxx.so"
-require "rubygems"
 require "gnuplot"
 
 module Rocker
@@ -18,7 +17,7 @@ module Rocker
     Rockerxx.new(DBARGS, matrix_id, experiment_id)
   end
 
-  def self.cd matrix_id, exp_id, res_date
+  def self.cd matrix_id = 1, exp_id = 259, res_date = "20100805210802"
     Dir.chdir("/home/jwoods/NetBeansProjects/crossval/tmp/work/matrix_#{matrix_id}/experiment_#{exp_id}/results.#{res_date}/") do
       x = self.create(matrix_id, exp_id)
       yield x
@@ -43,6 +42,8 @@ module Rocker
         end
       end
     end
+
+    result
   end
 
   def self.pr_plot phenotype_id, threshold = 0.0
@@ -63,5 +64,7 @@ module Rocker
         end
       end
     end
+
+    result
   end
 end
