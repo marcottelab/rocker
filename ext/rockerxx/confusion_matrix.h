@@ -13,6 +13,7 @@ typedef vector<float>                          rate_vec;
 typedef vector<size_t>                         size_vec;
 
 
+// TODO: For some reason, the very last TPR is not always equal to 1.
 class confusion_matrix {
 public:
     confusion_matrix(size_t total_bins, size_t total_genes_, size_t known_)
@@ -46,16 +47,16 @@ public:
 
     // Given some bin 'i', what is the true positive rate? (sensitivity/recall)
     float tpr(size_t i) const {
-        return tp[i] / (tp[i] + n[i] - tn[i] + 0.0);
+        return std::min(tp[i] / (tp[i] + n[i] - tn[i] + 0.0f), 1.0f);
     }
 
     // Given some bin 'i', what is the false positive rate? (fallout)
     float fpr(size_t i) const {
-        return (p[i] - tp[i]) / (p[i] - tp[i] + tn[i] + 0.0);
+        return std::min((p[i] - tp[i]) / (p[i] - tp[i] + tn[i] + 0.0f), 1.0f);
     }
 
     float actual_precision(size_t i) const {
-        return tp[i] / (float)(p[i]);
+        return std::min(tp[i] / (float)(p[i]), 1.0f);
     }
 
     rate_vec tpr_axis() const {

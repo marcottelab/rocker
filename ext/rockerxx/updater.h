@@ -49,6 +49,7 @@ public:
 
     map<uint,auc_info> aucs;
     double mean_auc;
+    double mean_pr_area;
 
     void operator()(argument_type &T) {
         result R;

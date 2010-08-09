@@ -5,11 +5,11 @@ $:.unshift(File.dirname(__FILE__)) unless
 # $:.unshift(File.join(File.dirname(__FILE__),'..','ext','rockerxx'))
 # STDERR.puts($:)
 
-require "rockerxx.so"
-require "gnuplot"
-
 module Rocker
-  VERSION = '0.1.0'
+  require "rockerxx.so"
+  require "gnuplot"
+  
+  VERSION = '0.1.2'
   DBARGS  = "dbname=crossval_development user=jwoods password=youwish1"
 
   # Calculate AUCs in the current working directory
@@ -24,9 +24,9 @@ module Rocker
     end
   end
 
-  def self.roc_plot phenotype_id, threshold = 0.0
+  def self.roc_plot matrix_id, exp_id, res_date, phenotype_id, threshold = 0.0
     result = nil
-    self.cd do |rocker|
+    self.cd(matrix_id, exp_id, res_date) do |rocker|
       result = rocker.calculate_plots phenotype_id, threshold
     end
 
@@ -46,9 +46,9 @@ module Rocker
     result
   end
 
-  def self.pr_plot phenotype_id, threshold = 0.0
+  def self.pr_plot matrix_id, exp_id, res_date, phenotype_id, threshold = 0.0
     result = nil
-    self.cd do |rocker|
+    self.cd(matrix_id, exp_id, res_date) do |rocker|
       result = rocker.calculate_plots phenotype_id, threshold
     end
 

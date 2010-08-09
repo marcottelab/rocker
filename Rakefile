@@ -5,7 +5,7 @@ require 'rake/extensiontask'
 require 'rake/testtask'
 
 PKG = "rocker"
-PKG_VERSION = [0,1,0]
+PKG_VERSION = [0,1,2]
 AUTHOR = "John O. Woods, Marcotte Lab"
 EMAIL = "john.woods@marcottelab.org"
 HOMEPAGE = "http://github.com/MarcotteLabGit/fastknn"
@@ -38,6 +38,14 @@ Rake::GemPackageTask.new(spec) do |pkg|
 end
 
 Rake::ExtensionTask.new('rockerxx')
+
+namespace :test do
+  Rake::TestTask.new(:rocker) do |t|
+    t.test_files = FileList['test/test_rocker.rb']
+    t.warning = true
+    t.verbose = true
+  end
+end
 
 #namespace :test do
 #  Rake::TestTask.new(:phenomatrix) do |t|

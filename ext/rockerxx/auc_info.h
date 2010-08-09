@@ -12,7 +12,7 @@ using std::ostringstream;
 using std::string;
 using std::ostream;
 
-const string AUC_COLUMNS = "(experiment_id, \"column\", auc, true_positives, false_positives, true_negatives, false_negatives, threshold)";
+const string AUC_COLUMNS = "(experiment_id, \"column\", auc, pr_area, true_positives, false_positives, true_negatives, false_negatives, threshold)";
 
 class auc_info {
 public:
@@ -33,7 +33,7 @@ public:
     // Convert to a portion of a SQL insertion (string)
     string to_s() const {
         ostringstream s;
-        s << auc << ", " << tp << ", " << fp << ", " << tn << ", " << fn << ", " << threshold;
+        s << auc << ", " << auprc << ", " << tp << ", " << fp << ", " << tn << ", " << fn << ", " << threshold;
         return s.str();
     }
 

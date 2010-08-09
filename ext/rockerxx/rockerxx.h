@@ -17,8 +17,13 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/lexical_cast.hpp>
 
+#ifdef RICE
+#include <rice/Exception.hpp>
+#endif
+
 using boost::filesystem::exists;
 using boost::filesystem::ifstream;
+using boost::lexical_cast;
 using std::string;
 using std::list;
 using std::vector;
@@ -91,6 +96,7 @@ public:
         map<uint, auc_info> rocs;
         
         double temp_auc_accum = 0.0; // Keep track of AUCs so we can get a mean
+        double temp_pr_accum  = 0.0; // Keep track of AU-PR-Cs so we can get a mean
         size_t divide_by      = 1;
         
         // Look at all files in the directory
@@ -100,17 +106,21 @@ public:
                 // Read the file and calculate AUCs.
                 rocs[j] = calculate_statistic(j, threshold);
                 temp_auc_accum += rocs[j].auc;
+                temp_pr_accum  += rocs[j].auprc;
                 ++divide_by;
                 
-                cout << "AUC: " << rocs[j].auc << endl;
+                cout << "AUC: " << rocs[j].auc << "\t\tPR-area: " << rocs[j].auprc << endl;
             }
         }
 
         // Calculate the mean AUC
-        if (divide_by > 0)
+        if (divide_by > 0) {
             update.mean_auc = temp_auc_accum / (double)(divide_by);
-        else
+            update.mean_pr_area = temp_pr_accum / (double)(divide_by);
+        } else {
             update.mean_auc = 0;
+            update.mean_pr_area = 0;
+        }
 
         return rocs;
     }
@@ -129,8 +139,23 @@ public:
     confusion_matrix calculate_plots(uint j, float threshold) const {
         using std::pair;
 
+        pair<genes_score_list,size_t> candidates;
+        try {
+            candidates = read_candidates(j); // bins (first) and total number of genes (second)
+        }
+#ifdef RICE
+        catch (Rice::Exception e) {
+            string err("rockerxx.h: calculate_plots: column ");
+            err += lexical_cast<string>(j) + " has no predictions";
+            throw Rice::Exception(rb_eArgError, err.c_str());
+        }
+#else
+        catch (...) { // Just continue to throw an exception.
+            throw;
+        }
+#endif
         set<uint> known_correct                  = fetch_column(j);
-        pair<genes_score_list,size_t> candidates = read_candidates(j); // bins (first) and total number of genes (second)
+        
         confusion_matrix cm(candidates.first.size(), candidates.second, known_correct.size());
 
         for (genes_score_list::const_iterator i = candidates.first.begin(); i != candidates.first.end(); ++i) {
@@ -167,7 +192,13 @@ public:
 
         if (!exists(filepath)) {
             //cerr << "Error: File '" << filepath << "' does not exist." << endl;
+#ifdef RICE
+            string err("rockerxx.h: read_candidates: file '");
+            err += filepath.string() + "' does not exist";
+            throw Rice::Exception(rb_eIOError, err.c_str());
+#else
             throw;
+#endif
         }
 
         genes_score_list res;

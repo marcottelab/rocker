@@ -80,10 +80,11 @@ Object to_ruby<auc_info>(auc_info const & d) {
 template <>
 Object to_ruby<confusion_matrix>(confusion_matrix const & d) {
     Hash h;
-//    h[Symbol("tp_axis")] = to_ruby<size_vec >(d.tp_axis());
-//    h[Symbol("p_axis")] = to_ruby<size_vec >(d.p_axis());
-    //h[Symbol("n_axis")] = to_ruby<size_vec >(d.n_axis());
-    //h[Symbol("tn_axis")] = to_ruby<size_vec >(d.tn_axis());
+    h[Symbol("tp_axis")] = to_ruby<size_vec >(d.tp_axis());
+    h[Symbol("p_axis")] = to_ruby<size_vec >(d.p_axis());
+    h[Symbol("n_axis")] = to_ruby<size_vec >(d.n_axis());
+    h[Symbol("tn_axis")] = to_ruby<size_vec >(d.tn_axis());
+    
     h[Symbol("tpr_axis")] = to_ruby<rate_vec >(d.tpr_axis());
     h[Symbol("fpr_axis")] = to_ruby<rate_vec >(d.fpr_axis());
     pair<rate_vec, float> pre_and_pr_area = d.precision_axis_and_area();
