@@ -67,12 +67,9 @@ Object to_ruby<size_vec >(size_vec const & d) {
 template <>
 Object to_ruby<auc_info>(auc_info const & d) {
     Hash h;
-    h[Symbol("auc")] = to_ruby<double>(d.auc);
-    h[Symbol("true_positives")] = to_ruby<uint>(d.tp);
-    h[Symbol("false_positives")] = to_ruby<uint>(d.fp);
-    h[Symbol("true_negatives")] = to_ruby<uint>(d.tn);
-    h[Symbol("false_negatives")] = to_ruby<uint>(d.fn);
-    h[Symbol("threshold")] = to_ruby<float>(d.threshold);
+    h[Symbol("roc_area")]  = to_ruby<float>(d.roc_area);
+    h[Symbol("pr_area")]   = to_ruby<float>(d.pr_area);
+    h[Symbol("gene_count")]= to_ruby<uint>(d.gene_count);
 
     return h;
 }
@@ -125,7 +122,8 @@ void Init_rockerxx() {
                             &Rocker::calculate_statistic,
                             (Arg("j"), Arg("threshold") = (double)(0.0)))
              .define_method("read_candidates", &Rocker::read_candidates, (Arg("j")))
-             .define_method("mean_auc", &Rocker::mean_auc);
+             .define_method("pr_area", &Rocker::pr_area)
+             .define_method("roc_area", &Rocker::roc_area);
 
 }
 

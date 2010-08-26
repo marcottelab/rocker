@@ -12,28 +12,24 @@ using std::ostringstream;
 using std::string;
 using std::ostream;
 
-const string AUC_COLUMNS = "(experiment_id, \"column\", auc, pr_area, true_positives, false_positives, true_negatives, false_negatives, threshold)";
+const string RESULTS_COLUMNS = "(experiment_id, \"column\", roc_area, pr_area, gene_count)";
 
 class auc_info {
 public:
-    float auc;
-    float auprc;
-    uint tp;
-    uint fp;
-    uint tn;
-    uint fn;
-    float threshold;
+    float roc_area;
+    float pr_area;
+    uint gene_count;
 
     // Constructor
-    auc_info(float threshold_ = 0.0, float area_under_curve = 0, float area_under_pr_curve = 0, uint true_positives = 0, uint false_positives = 0, uint true_negatives = 0, uint false_negatives = 0)
-    : auc(area_under_curve), auprc(area_under_pr_curve), tp(true_positives), fp(false_positives), tn(true_negatives), fn(false_negatives), threshold(threshold_) { }
+    auc_info(float area_under_curve = 0, float area_under_pr_curve = 0, uint gene_count_ = 0)
+    : roc_area(area_under_curve), pr_area(area_under_pr_curve), gene_count(gene_count_) { }
 
     ~auc_info() { }
 
     // Convert to a portion of a SQL insertion (string)
     string to_s() const {
         ostringstream s;
-        s << auc << ", " << auprc << ", " << tp << ", " << fp << ", " << tn << ", " << fn << ", " << threshold;
+        s << roc_area << ", " << pr_area << ", " << gene_count;
         return s.str();
     }
 

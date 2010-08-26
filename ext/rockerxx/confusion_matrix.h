@@ -109,18 +109,7 @@ public:
         for (map<float,size_t>::const_iterator it = threshold.begin(); it != threshold.end(); ++it)
             if (it->first > thresh) idx = it->second;
 
-        // Only calculate this so we can get the precision.
-        pair<rate_vec,float> tmp(precision_axis_and_area());
-
-        auc_info a(thresh);
-        a.tp = tp[idx];
-        a.fp = p[idx] - tp[idx];
-        a.tn = tn[idx];
-        a.fn = n[idx] - tn[idx];
-        a.auc = roc_area_;
-        a.auprc = tmp.second;
-        
-        return a;
+        return auc_info(roc_area_, precision_axis_and_area().second, tp[idx] + n[idx] - tn[idx]);
     }
 
     size_t bins() const {  return p.size() - 1; }

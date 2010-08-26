@@ -81,14 +81,15 @@ public:
     // Acquire results, compare them to what's in the database, and add the data to the DB.
     // The argument allows us to choose a value at which to set the T/F cutoff.
     void acquire_results(float threshold) {
-        update.aucs = process_results(threshold);
+        update.results = process_results(threshold);
         c.perform(update);
     }
 
 
     // Return the mean AUC calculated -- requires that process_results was called,
     // which happens in the constructor, so it's okay.
-    double mean_auc() { return update.mean_auc; }
+    double roc_area() const { return update.mean_roc_area; }
+    double pr_area() const {  return update.mean_pr_area;  }
     
     // Go through the results directory
     map<uint,auc_info> process_results(float threshold) {
@@ -105,20 +106,20 @@ public:
             if (path_to_uint(jit->path(), j)) {
                 // Read the file and calculate AUCs.
                 rocs[j] = calculate_statistic(j, threshold);
-                temp_auc_accum += rocs[j].auc;
-                temp_pr_accum  += rocs[j].auprc;
+                temp_auc_accum += rocs[j].roc_area;
+                temp_pr_accum  += rocs[j].pr_area;
                 ++divide_by;
                 
-                cout << "AUC: " << rocs[j].auc << "\t\tPR-area: " << rocs[j].auprc << endl;
+                cout << "ROC area: " << rocs[j].roc_area << "\t\tPR area: " << rocs[j].pr_area << endl;
             }
         }
 
         // Calculate the mean AUC
         if (divide_by > 0) {
-            update.mean_auc = temp_auc_accum / (double)(divide_by);
+            update.mean_roc_area = temp_auc_accum / (double)(divide_by);
             update.mean_pr_area = temp_pr_accum / (double)(divide_by);
         } else {
-            update.mean_auc = 0;
+            update.mean_roc_area = 0;
             update.mean_pr_area = 0;
         }
 

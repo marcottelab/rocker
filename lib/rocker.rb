@@ -7,10 +7,10 @@ $:.unshift(File.dirname(__FILE__)) unless
 
 module Rocker
   require "rockerxx.so"
-  require "gnuplot"
+  # require "gnuplot"
   
-  VERSION = '0.1.2'
-  DBARGS  = "dbname=crossval_development user=jwoods password=youwish1"
+  VERSION = '0.2.0'
+  DBARGS  = "host=arrakis.icmb.utexas.edu dbname=crossval_development user=crossval password=youwish1"
 
   # Calculate AUCs in the current working directory
   def self.create(matrix_id, experiment_id)
@@ -37,7 +37,7 @@ module Rocker
         plot.xlabel "False Positive Rate"
 
         plot.data << Gnuplot::DataSet.new([result[:fpr_axis],result[:tpr_axis]]) do |ds|
-          ds.with = "lines"
+          ds.with = "linespoints"
           ds.notitle
         end
       end

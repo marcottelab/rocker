@@ -47,23 +47,23 @@ class Updater : public transactor <> {
 public:
     Updater(uint exp_id) : transactor<>("Updater"), experiment_id(exp_id) {}
 
-    map<uint,auc_info> aucs;
-    double mean_auc;
+    map<uint,auc_info> results;
+    double mean_roc_area;
     double mean_pr_area;
 
     void operator()(argument_type &T) {
         result R;
 
-        if (aucs.size() == 0) {
+        if (results.size() == 0) {
             cerr << "No updates necessary." << endl;
             return;
         }
 
-        query = make_insertion_sql() + "\n" + make_update_total_auc_sql();
+        query = make_insertion_sql() + "\n" + make_update_result_sql();
 
         try {
-            // Insert the AUCs
-            // Update the average AUC
+            // Insert the results
+            // Update the average PR area and ROC area
             R = T.exec(query);
             cout << "Query:" << endl;
             cout << query << endl;
@@ -83,18 +83,19 @@ protected:
 
     string make_insertion_sql() const {
         ostringstream q;
-        q << "INSERT INTO rocs " << AUC_COLUMNS << " VALUES ";
+        q << "INSERT INTO results " << RESULTS_COLUMNS << " VALUES ";
         list<string> insertions;
-        for (map<uint,auc_info>::const_iterator i = aucs.begin(); i != aucs.end(); ++i) {
+        for (map<uint,auc_info>::const_iterator i = results.begin(); i != results.end(); ++i) {
             insertions.push_back( i->second.entry(experiment_id, i->first) );
         }
         q << join(insertions, ", ") << ';';
         return q.str();
     }
 
-    string make_update_total_auc_sql() const {
+    string make_update_result_sql() const {
         ostringstream q;
-        q << "UPDATE experiments SET total_auc = " << mean_auc
+        q << "UPDATE experiments SET mean_auroc = " << mean_roc_area
+          << ", mean_auprc = " << mean_pr_area
           << " WHERE experiments.id = " << experiment_id << ';';
         return q.str();
     }
