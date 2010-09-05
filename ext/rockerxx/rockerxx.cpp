@@ -46,11 +46,18 @@ typedef LineInputIterator<std::string> line_input_iterator;
 // objects for users to peruse.
 
 template <>
+Object to_ruby<set<uint> >(set<uint> const & d) {
+  Array ary;
+  for (set<uint>::const_iterator it = d.begin(); it != d.end(); ++it)
+    ary.push(*it);
+  return ary;
+}
+
+template <>
 Object to_ruby<rate_vec >(rate_vec const & d) {
     Array ary;
-    for (rate_vec::const_iterator it = d.begin(); it != d.end(); ++it) {
+    for (rate_vec::const_iterator it = d.begin(); it != d.end(); ++it)
         ary.push(*it);
-    }
     return ary;
 }
 
@@ -58,9 +65,8 @@ Object to_ruby<rate_vec >(rate_vec const & d) {
 template <>
 Object to_ruby<size_vec >(size_vec const & d) {
     Array ary;
-    for (size_vec::const_iterator it = d.begin(); it != d.end(); ++it) {
+    for (size_vec::const_iterator it = d.begin(); it != d.end(); ++it)
         ary.push(*it);
-    }
     return ary;
 }
 
