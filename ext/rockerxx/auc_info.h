@@ -29,7 +29,14 @@ public:
     // Convert to a portion of a SQL insertion (string)
     string to_s() const {
         ostringstream s;
-        s << roc_area << ", " << pr_area << ", " << gene_count;
+        if (roc_area != roc_area)        s << "'NaN', ";
+        else                             s << roc_area << ", ";
+        
+        if (pr_area != pr_area)          s << "'NaN', ";
+        else                             s << pr_area << ", ";
+        
+        s << gene_count;
+        
         return s.str();
     }
 
