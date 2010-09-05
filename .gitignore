@@ -1,6 +1,9 @@
 mkmf.log
 *.o
 *.so
+*.h~
+*.cpp~
+*.rb~
 Makefile
 nbproject/
 pkg/

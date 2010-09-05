@@ -73,7 +73,11 @@ public:
             cerr << "SQL error in Updater transactor." << endl;
             cerr << "Query: " << e.query() << endl;
             cerr << "Error: " << e.what()  << endl;
-            //FIXME: Needs to throw a Rails exception of some kind. (Or does it?)
+#ifdef RICE
+            throw Rice::Exception(rb_eArgError, "SQL error in Updater transactor.");
+#else
+            throw;
+#endif
         }
     }
 

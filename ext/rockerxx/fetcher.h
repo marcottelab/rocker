@@ -60,6 +60,11 @@ public:
             cerr << "SQL error in Fetcher transactor." << endl;
             cerr << "Query: " << e.query() << endl;
             cerr << "Error: " << e.what()  << endl;
+#ifdef RICE
+            throw Rice::Exception(rb_eArgError, "SQL error in Fetcher transactor.");
+#else
+            throw;
+#endif
         }
     }
 

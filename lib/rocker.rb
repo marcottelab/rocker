@@ -9,7 +9,7 @@ module Rocker
   require "rockerxx.so"
   # require "gnuplot"
   
-  VERSION = '0.2.0'
+  VERSION = '0.2.1'
   DBARGS  = "host=arrakis.icmb.utexas.edu dbname=crossval_development user=crossval password=youwish1"
 
   # Calculate AUCs in the current working directory
