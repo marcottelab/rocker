@@ -98,9 +98,14 @@ protected:
 
     string make_update_result_sql() const {
         ostringstream q;
-        q << "UPDATE experiments SET mean_auroc = " << mean_roc_area
-          << ", mean_auprc = " << mean_pr_area
-          << " WHERE experiments.id = " << experiment_id << ';';
+        q << "UPDATE experiments SET mean_auroc = ";
+        if (mean_roc_area != mean_roc_area)     q << "'NaN'";
+        else                                    q << mean_roc_area;
+        q << ", mean_auprc = ";
+        if (mean_pr_area != mean_pr_area)       q << "'NaN'";
+        else                                    q << mean_pr_area;
+        
+        q << " WHERE experiments.id = " << experiment_id << ';';
         return q.str();
     }
 };
