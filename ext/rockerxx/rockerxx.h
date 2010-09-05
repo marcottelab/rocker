@@ -105,7 +105,7 @@ public:
             uint j = 0;
             if (path_to_uint(jit->path(), j)) {
                 // Read the file and calculate AUCs.
-                rocs[j] = calculate_statistic(j, threshold);
+                rocs[j] = calculate_statistic(j);
                 temp_auc_accum += rocs[j].roc_area;
                 temp_pr_accum  += rocs[j].pr_area;
                 ++divide_by;
@@ -137,7 +137,7 @@ public:
     // * Sensitivity/recall/TPR  (TP/(TP+FN))
     // * Fallout/FPR (FP/(FP+TN))
     // * precision (TP/(TP+FP))
-    confusion_matrix calculate_plots(uint j, float threshold) const {
+    confusion_matrix calculate_plots(uint j) const {
         using std::pair;
 
         pair<genes_score_list,size_t> candidates;
@@ -176,8 +176,8 @@ public:
     }
 
     // For some phenotype j, determine AUC, fp, tp, fn, tn, etc.
-    auc_info calculate_statistic(uint j, float threshold) const {
-        return calculate_plots(j, threshold).summary(threshold);
+    auc_info calculate_statistic(uint j) const {
+        return calculate_plots(j).summary(0.0);
     }
 
 
