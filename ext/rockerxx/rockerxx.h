@@ -98,7 +98,8 @@ public:
         
         double temp_auc_accum = 0.0; // Keep track of AUCs so we can get a mean
         double temp_pr_accum  = 0.0; // Keep track of AU-PR-Cs so we can get a mean
-        size_t divide_by      = 1;
+        size_t divide_roc_area_by      = 1;
+        size_t divide_pr_area_by       = 1;
         
         // Look at all files in the directory
         for (basic_directory_iterator<path> jit(path(".")); jit != directory_iterator(); ++jit) {
@@ -106,9 +107,15 @@ public:
             if (path_to_uint(jit->path(), j)) {
                 // Read the file and calculate AUCs.
                 rocs[j] = calculate_statistic(j);
-                temp_auc_accum += rocs[j].roc_area;
-                temp_pr_accum  += rocs[j].pr_area;
-                ++divide_by;
+                
+                if (rocs[j].roc_area == rocs[j].roc_area) { // Don't include NaNs in the calculation of averages.
+                  temp_auc_accum += rocs[j].roc_area;
+                  ++divide_roc_area_by;
+                }
+                if (rocs[j].pr_area == rocs[j].pr_area) {
+                  temp_pr_accum  += rocs[j].pr_area;
+                  ++divide_pr_area_by;
+                }
                 
                 cout << "ROC area: " << rocs[j].roc_area << "\t\tPR area: " << rocs[j].pr_area << endl;
             }
@@ -116,8 +123,8 @@ public:
 
         // Calculate the mean AUC
         if (divide_by > 0) {
-            update.mean_roc_area = temp_auc_accum / (double)(divide_by);
-            update.mean_pr_area = temp_pr_accum / (double)(divide_by);
+            update.mean_roc_area = temp_auc_accum / (double)(divide_roc_area_by);
+            update.mean_pr_area = temp_pr_accum / (double)(divide_pr_area_by);
         } else {
             update.mean_roc_area = 0;
             update.mean_pr_area = 0;
