@@ -1,10 +1,10 @@
 = rocker
 
-* http://github.com/MarcotteLabGit/rocker
+* http://github.com/marcottelab/rocker
 
 == DESCRIPTION:
 
-This gem is very fast C++ code for calculating AUCs on results of cross-validation.
+This gem is fast C++ code for calculating AUCs on results of cross-validation.
 
 It is specific to the crossval database schema, which has not been released yet.
 

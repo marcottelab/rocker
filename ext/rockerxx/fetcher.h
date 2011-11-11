@@ -27,19 +27,13 @@ class Fetcher : public transactor<nontransaction> {
 public:
     Fetcher(uint m_id, map<uint, set<uint> >* known)
     : transactor<nontransaction>("Fetcher"), matrix_id(m_id), known_correct(known)
-    {
-//        cerr << "Constructed" << endl;
-    }
+    { }
 
     Fetcher(const Fetcher& rhs)
     : query(rhs.query), matrix_id(rhs.matrix_id), known_correct(rhs.known_correct)
-    {
-//        cerr << "Copy constructed" << endl;
-    }
+    { }
 
-    ~Fetcher() {
-//        cerr << "De-allocate" << endl;
-    }
+    ~Fetcher() { }
 
     void operator()(argument_type &T) {
         result R;
