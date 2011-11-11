@@ -13,7 +13,7 @@ module Rocker
   end
   # require "gnuplot"
   
-  VERSION = '0.3.1'
+  VERSION = '0.3.2'
   DBARGS  = "host=arrakis.icmb.utexas.edu dbname=crossval_development user=crossval password=youwish1"
   WORKDIR = "../crossval/tmp/work/"
 
